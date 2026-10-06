@@ -1,0 +1,40 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "banzaiplay/game",
+	"title": "BanzaiPlay Game",
+	"category": "embed",
+	"icon": "games",
+	"description": "Embed a game uploaded to BanzaiPlay, with a loading screen, keyboard focus handling and fullscreen.",
+	"keywords": [ "game", "unity", "godot", "phaser", "html5", "webgl" ],
+	"textdomain": "banzaiplay",
+	"attributes": {
+		"game": {
+			"type": "string",
+			"default": ""
+		},
+		"width": {
+			"type": "number",
+			"default": 0
+		},
+		"height": {
+			"type": "number",
+			"default": 0
+		},
+		"start": {
+			"type": "string",
+			"enum": [ "", "click", "load" ],
+			"default": ""
+		},
+		"fullscreen": {
+			"type": "boolean",
+			"default": true
+		}
+	},
+	"supports": {
+		"html": false,
+		"customClassName": true
+	},
+	"editorScript": "banzaiplay-block-editor",
+	"editorStyle": "banzaiplay-block-editor"
+}

@@ -1,0 +1,381 @@
+/*
+ * BanzaiPlay player.
+ *
+ * The container is as wide as the column allows, up to the game's native
+ * width (set inline as max-width); the viewport inside keeps the game's
+ * aspect ratio (--banzaiplay-ar, width ÷ height, set inline). Nothing is
+ * ever wider than the column, so a game can't make a phone scroll sideways.
+ *
+ * Rules are scoped and fairly specific, because themes style button, p and
+ * iframe broadly; override them with .banzaiplay-container selectors.
+ */
+
+.banzaiplay-container {
+	--banzaiplay-accent: #ffe200;
+	--banzaiplay-accent-2: #ff7000;
+	/* Text on the accent: dark on the default yellow and orange, light on a dark accent. */
+	--banzaiplay-on-accent: #2a1400;
+	--banzaiplay-glow: rgba(255, 190, 0, 0.45);
+	--banzaiplay-surface: #0b0f14;
+	--banzaiplay-text: #f5f7fa;
+	--banzaiplay-muted: rgba(245, 247, 250, 0.72);
+	--banzaiplay-radius: 10px;
+	--banzaiplay-controls-height: 40px;
+	position: relative;
+	box-sizing: border-box;
+	width: 100%;
+	margin: 0 auto 1.5em;
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	font-size: 16px;
+	line-height: 1.4;
+	text-align: left;
+}
+
+.banzaiplay-container *,
+.banzaiplay-container *::before,
+.banzaiplay-container *::after {
+	box-sizing: border-box;
+}
+
+/* Elements below set their own display, which would beat [hidden]. */
+.banzaiplay-container [hidden] {
+	display: none !important;
+}
+
+.banzaiplay-container:focus {
+	outline: none;
+}
+
+.banzaiplay-container:focus-visible .banzaiplay-viewport {
+	box-shadow: 0 0 0 3px var(--banzaiplay-glow);
+}
+
+.banzaiplay-viewport {
+	position: relative;
+	width: 100%;
+	aspect-ratio: var(--banzaiplay-ar, 1.777778);
+	overflow: hidden;
+	border-radius: var(--banzaiplay-radius);
+	background: #000;
+	color: var(--banzaiplay-text);
+	transition: box-shadow 0.15s ease;
+}
+
+/* Browsers without aspect-ratio (before 2021): padding-box fallback. */
+@supports not (aspect-ratio: 1) {
+	.banzaiplay-viewport {
+		height: 0;
+		padding-top: calc(100% / var(--banzaiplay-ar, 1.777778));
+	}
+}
+
+/* The game has the keyboard. */
+.banzaiplay-container.is-focused .banzaiplay-viewport {
+	box-shadow: 0 0 0 2px var(--banzaiplay-accent), 0 0 18px var(--banzaiplay-glow);
+}
+
+.banzaiplay-stage {
+	position: absolute;
+	inset: 0;
+}
+
+.banzaiplay-container .banzaiplay-frame {
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: block;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: #000;
+}
+
+/* "Scale a fixed-size game": native size from the width/height attributes,
+   scaled by frontend.js. */
+.banzaiplay-container .banzaiplay-frame.is-scaled {
+	width: auto;
+	height: auto;
+	transform-origin: 0 0;
+}
+
+/* ---------- Overlays: Click to Play, loading, errors ---------- */
+
+.banzaiplay-overlay,
+.banzaiplay-loading,
+.banzaiplay-message {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	padding: 16px;
+	background:
+		radial-gradient(120% 90% at 50% 0%, rgba(255, 190, 0, 0.16), transparent 60%),
+		radial-gradient(100% 80% at 50% 100%, rgba(255, 112, 0, 0.12), transparent 60%),
+		var(--banzaiplay-surface);
+	text-align: center;
+}
+
+.banzaiplay-game-title,
+.banzaiplay-loading-title {
+	max-width: 100%;
+	margin: 0;
+	overflow: hidden;
+	color: var(--banzaiplay-text);
+	font-size: clamp(18px, 3.2vw, 30px);
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.banzaiplay-loading-title {
+	font-size: clamp(16px, 2.4vw, 22px);
+}
+
+.banzaiplay-container .banzaiplay-description {
+	display: -webkit-box;
+	max-width: 36em;
+	margin: 0;
+	overflow: hidden;
+	color: var(--banzaiplay-muted);
+	font-size: clamp(13px, 1.6vw, 16px);
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+}
+
+.banzaiplay-container .banzaiplay-play-btn,
+.banzaiplay-container .banzaiplay-retry-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	width: auto;
+	min-width: 0;
+	height: auto;
+	min-height: 0;
+	margin: 6px 0 0;
+	padding: 12px 28px 12px 22px;
+	border: 0;
+	border-radius: 999px;
+	background: linear-gradient(90deg, var(--banzaiplay-accent), var(--banzaiplay-accent-2));
+	box-shadow: 0 6px 24px var(--banzaiplay-glow);
+	color: var(--banzaiplay-on-accent);
+	font: inherit;
+	font-size: 17px;
+	font-weight: 700;
+	letter-spacing: 0;
+	line-height: 1;
+	text-decoration: none;
+	text-transform: none;
+	cursor: pointer;
+	transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.banzaiplay-container .banzaiplay-retry-btn {
+	padding: 10px 22px;
+	font-size: 15px;
+}
+
+.banzaiplay-container .banzaiplay-play-btn:hover,
+.banzaiplay-container .banzaiplay-retry-btn:hover {
+	box-shadow: 0 8px 28px var(--banzaiplay-glow);
+	color: var(--banzaiplay-on-accent);
+	transform: translateY(-1px);
+}
+
+.banzaiplay-container .banzaiplay-play-btn:focus-visible,
+.banzaiplay-container .banzaiplay-retry-btn:focus-visible {
+	outline: 3px solid #fff;
+	outline-offset: 3px;
+}
+
+.banzaiplay-play-btn svg {
+	flex: none;
+}
+
+.banzaiplay-container .banzaiplay-mobile-note {
+	max-width: 30em;
+	margin: 4px 0 0;
+	color: var(--banzaiplay-muted);
+	font-size: 13px;
+}
+
+/* Loading. */
+.banzaiplay-progress-bar {
+	position: relative;
+	width: min(360px, 80%);
+	height: 8px;
+	overflow: hidden;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.12);
+}
+
+.banzaiplay-progress-fill {
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	background: linear-gradient(90deg, var(--banzaiplay-accent), var(--banzaiplay-accent-2));
+	transform: scaleX(0);
+	transform-origin: 0 50%;
+	transition: transform 0.25s ease-out;
+}
+
+.banzaiplay-progress-bar.is-indeterminate .banzaiplay-progress-fill {
+	width: 35%;
+	transform: none;
+	animation: banzaiplay-sweep 1.2s ease-in-out infinite;
+}
+
+@keyframes banzaiplay-sweep {
+	from {
+		left: -35%;
+	}
+
+	to {
+		left: 100%;
+	}
+}
+
+.banzaiplay-progress-text {
+	color: var(--banzaiplay-muted);
+	font-size: 14px;
+	font-variant-numeric: tabular-nums;
+}
+
+.banzaiplay-branding {
+	position: absolute;
+	right: 12px;
+	bottom: 10px;
+	color: rgba(245, 247, 250, 0.42);
+	font-size: 11px;
+	letter-spacing: 0.02em;
+}
+
+/* Errors. */
+.banzaiplay-container .banzaiplay-message-text {
+	max-width: 34em;
+	margin: 0;
+	color: var(--banzaiplay-text);
+	font-size: 15px;
+}
+
+.banzaiplay-container .banzaiplay-noscript {
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	background: var(--banzaiplay-surface);
+	color: var(--banzaiplay-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.banzaiplay-progress-fill,
+	.banzaiplay-container .banzaiplay-play-btn {
+		transition: none;
+	}
+
+	.banzaiplay-progress-bar.is-indeterminate .banzaiplay-progress-fill {
+		left: 0;
+		width: 100%;
+		animation: none;
+		opacity: 0.5;
+	}
+}
+
+/* ---------- Controls bar ---------- */
+
+/* Below the game, in the theme's text colour — except in fullscreen. */
+.banzaiplay-controls {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 12px;
+	min-height: var(--banzaiplay-controls-height);
+	padding: 4px 2px 0;
+}
+
+.banzaiplay-hint {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	color: inherit;
+	font-size: 13px;
+	opacity: 0.75;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.banzaiplay-container .banzaiplay-fullscreen-btn {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	background: rgba(127, 127, 127, 0.16);
+	box-shadow: none;
+	color: inherit;
+	cursor: pointer;
+}
+
+.banzaiplay-container .banzaiplay-fullscreen-btn:hover {
+	background: rgba(127, 127, 127, 0.28);
+}
+
+.banzaiplay-container .banzaiplay-fullscreen-btn:focus-visible {
+	outline: 2px solid var(--banzaiplay-accent);
+	outline-offset: 2px;
+}
+
+.banzaiplay-fullscreen-btn .banzaiplay-icon-exit,
+.banzaiplay-fullscreen-btn.is-active .banzaiplay-icon-enter {
+	display: none;
+}
+
+.banzaiplay-fullscreen-btn.is-active .banzaiplay-icon-exit {
+	display: block;
+}
+
+/* ---------- Fullscreen: the game as large as the screen allows, letterboxed. ---------- */
+
+.banzaiplay-container.is-fullscreen {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 100vw;
+	max-width: none !important;
+	height: 100vh;
+	margin: 0;
+	padding: 0;
+	background: #000;
+	color: var(--banzaiplay-text);
+}
+
+.banzaiplay-container.is-fullscreen .banzaiplay-viewport {
+	flex: none;
+	width: min(100vw, calc((100vh - var(--banzaiplay-controls-height)) * var(--banzaiplay-ar, 1.777778)));
+	border-radius: 0;
+}
+
+.banzaiplay-container.is-fullscreen .banzaiplay-controls {
+	flex: none;
+	width: 100%;
+	padding: 2px 12px;
+}

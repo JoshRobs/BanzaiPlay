@@ -1,0 +1,6 @@
+# Normalise text files; shell scripts keep LF everywhere, or bash fails on
+# the carriage returns a Windows checkout would add.
+* text=auto
+*.sh text eol=lf
+
+*.png binary

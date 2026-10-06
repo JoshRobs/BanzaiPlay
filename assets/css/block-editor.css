@@ -1,0 +1,77 @@
+/* BanzaiPlay Game block, in the editor: a card the shape of the player. */
+
+.banzaiplay-block-card {
+	position: relative;
+	width: 100%;
+	margin: 0 auto;
+	overflow: hidden;
+	border-radius: 10px;
+	background:
+		radial-gradient(120% 90% at 50% 0%, rgba(255, 190, 0, 0.18), transparent 60%),
+		radial-gradient(100% 80% at 50% 100%, rgba(255, 112, 0, 0.14), transparent 60%),
+		#0b0f14;
+	color: #f5f7fa;
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.banzaiplay-block-card-inner {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 16px;
+	text-align: center;
+}
+
+.banzaiplay-block-play {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 52px;
+	height: 52px;
+	border-radius: 50%;
+	background: linear-gradient(90deg, #ffe200, #ff7000);
+	color: #2a1400;
+	font-size: 20px;
+	line-height: 1;
+}
+
+.banzaiplay-block-title {
+	font-size: 20px;
+	line-height: 1.2;
+}
+
+.banzaiplay-block-description {
+	max-width: 32em;
+	color: rgba(245, 247, 250, 0.72);
+	font-size: 13px;
+}
+
+.banzaiplay-block-meta {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 6px;
+	font-size: 12px;
+}
+
+.banzaiplay-block-meta > span {
+	padding: 2px 9px;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.12);
+}
+
+.banzaiplay-block-meta > .banzaiplay-block-engine {
+	background: rgba(255, 190, 0, 0.22);
+}
+
+.banzaiplay-block-warning {
+	padding: 2px 10px;
+	border-radius: 999px;
+	background: #fcf0f1;
+	color: #b32d2e;
+	font-size: 12px;
+}
