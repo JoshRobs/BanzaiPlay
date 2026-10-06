@@ -3,11 +3,14 @@
     Builds the distributable plugin ZIP.
 
 .DESCRIPTION
+    Attach the resulting ZIP to a GitHub release. It is the whole plugin —
+    there is one build, with every feature in it.
+
     The file list is an ALLOWLIST, deliberately — the same as BanzaiEmbed's
     build. A blocklist has to be right every time a new file appears in the
-    repo root, and the cost of getting it wrong once is shipping
-    .wp-env.override.json (which will hold the Freemius secret key) to every
-    customer. Anything not named here does not ship.
+    repo root, and the cost of getting it wrong once is shipping local config
+    such as .wp-env.override.json to everyone who downloads it. Anything not
+    named here does not ship.
 
     The archive contains a single top-level directory named for the slug, which
     is what WordPress expects when the ZIP is installed through the Plugins
@@ -51,8 +54,7 @@ $include = @(
     'includes',
     'assets',
     'blocks',
-    'templates',
-    'vendor/freemius'
+    'templates'
 )
 
 $staging = Join-Path ([System.IO.Path]::GetTempPath()) "bzpl-build-$([guid]::NewGuid().ToString('N'))"

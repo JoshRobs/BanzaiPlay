@@ -337,9 +337,6 @@ final class Embed {
 				<div class="banzaiplay-progress-fill"></div>
 			</div>
 			<div class="banzaiplay-progress-text"><?php esc_html_e( 'Loading…', 'banzaiplay' ); ?></div>
-			<?php if ( ! bzpl_has_valid_license() ) : ?>
-				<div class="banzaiplay-branding"><?php esc_html_e( 'Powered by BanzaiPlay', 'banzaiplay' ); ?></div>
-			<?php endif; ?>
 		</div>
 		<div class="banzaiplay-message" role="alert" hidden>
 			<p class="banzaiplay-message-text"></p>

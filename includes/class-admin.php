@@ -600,7 +600,7 @@ final class Admin {
 
 		/**
 		 * Filter a game record as the edit form saves it, after the nonce and
-		 * capability checks. Pro modules read their own fields from $_POST here.
+		 * capability checks. Feature modules read their own fields from $_POST here.
 		 *
 		 * @param array $game   Record about to be saved.
 		 * @param bool  $is_new Whether the game is being created.
@@ -941,7 +941,7 @@ final class Admin {
 	}
 
 	/**
-	 * Queue a notice for the next screen this user sees. Public for pro
+	 * Queue a notice for the next screen this user sees. Public for feature
 	 * modules saving through handle_save().
 	 *
 	 * @param string   $type    success | error | warning | info.

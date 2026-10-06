@@ -350,9 +350,8 @@
 	//     BanzaiPlay.user()                Promise of the visitor's details, or null
 	//     BanzaiPlay.emit(name, data)      tell the page: "score", "complete"…
 	//
-	// It is there in every version, so a game written for it never throws;
-	// the data and what happens to events come with Pro. The page hands the
-	// data over on the iframe element itself (same origin), before the game's
+	// It is always defined, so a game written for it never throws, even on a
+	// page where nothing listens for its events. The page hands the data over on the iframe element itself (same origin), before the game's
 	// first script, so it can be read synchronously.
 
 	var host = {};

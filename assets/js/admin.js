@@ -364,31 +364,6 @@
 		});
 	}
 
-	/**
-	 * Pro: the "Activate Licence" menu item links here with ?bzpl_activate=1.
-	 * Open Freemius's dialog through the header button, once — the param is
-	 * dropped so a refresh doesn't reopen it. Freemius binds the button's
-	 * click handler in a footer script, so wait for the page to finish.
-	 */
-	function initLicence() {
-		var params = new URLSearchParams(window.location.search);
-
-		if (!params.has("bzpl_activate")) {
-			return;
-		}
-
-		params.delete("bzpl_activate");
-		window.history.replaceState(null, "", window.location.pathname + (params.toString() ? "?" + params : "") + window.location.hash);
-
-		window.addEventListener("load", function () {
-			var button = document.querySelector("[data-bzpl-activate]");
-
-			if (button) {
-				button.click();
-			}
-		});
-	}
-
 	document.addEventListener("DOMContentLoaded", function () {
 		initSlug();
 		initCopy();
@@ -396,6 +371,5 @@
 		initDropzone();
 		initUpload();
 		initToggles();
-		initLicence();
 	});
 })();

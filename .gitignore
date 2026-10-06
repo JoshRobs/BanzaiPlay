@@ -2,11 +2,7 @@ node_modules/
 tests/output/
 # Third-party game builds for local testing (tests/fetch-real.sh) — not ours to redistribute.
 tests/real/
-
-# The Freemius SDK ships inside the plugin, so it is tracked. Everything else
-# in vendor/ is ignored.
-vendor/*
-!vendor/freemius/
+vendor/
 
 dist/
 *.zip
@@ -16,5 +12,5 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Local wp-env overrides — will hold the Freemius secret key, never commit
+# Local wp-env overrides — machine-specific, never commit
 .wp-env.override.json

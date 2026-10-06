@@ -1,0 +1,169 @@
+/*
+ * BanzaiPlay player extras.
+ *
+ * The cover behind the Play and loading screens (.has-backdrop, with
+ * --banzaiplay-backdrop set by Branding), the logo above the title, the
+ * waiting state of a game queued behind another, and the results screen.
+ */
+
+/* ---------- Loading screen ---------- */
+
+.banzaiplay-container .banzaiplay-logo {
+	display: block;
+	flex: none;
+	width: auto;
+	max-width: min(42%, 240px);
+	height: auto;
+	max-height: 22%;
+	margin: 0 0 2px;
+	object-fit: contain;
+	box-shadow: none;
+}
+
+.banzaiplay-container.has-backdrop .banzaiplay-overlay,
+.banzaiplay-container.has-backdrop .banzaiplay-loading {
+	background:
+		linear-gradient(180deg, rgba(5, 8, 12, 0.3), rgba(5, 8, 12, 0.78)),
+		var(--banzaiplay-backdrop) center / cover no-repeat,
+		var(--banzaiplay-surface);
+}
+
+/* Loading over a picture: dim it further, so the bar reads. */
+.banzaiplay-container.has-backdrop .banzaiplay-loading {
+	background:
+		linear-gradient(180deg, rgba(5, 8, 12, 0.6), rgba(5, 8, 12, 0.85)),
+		var(--banzaiplay-backdrop) center / cover no-repeat,
+		var(--banzaiplay-surface);
+}
+
+.banzaiplay-container.has-backdrop .banzaiplay-game-title,
+.banzaiplay-container.has-backdrop .banzaiplay-loading-title,
+.banzaiplay-container.has-backdrop .banzaiplay-description {
+	text-shadow: 0 2px 14px rgba(0, 0, 0, 0.65);
+}
+
+.banzaiplay-container.has-backdrop .banzaiplay-description {
+	color: rgba(245, 247, 250, 0.88);
+}
+
+/* Queued behind another game that is loading. */
+.banzaiplay-container.is-waiting .banzaiplay-progress-bar {
+	opacity: 0.45;
+}
+
+/* ---------- Results ---------- */
+
+.banzaiplay-results {
+	position: absolute;
+	inset: 0;
+	z-index: 4;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 14px;
+	padding: 16px;
+	background: rgba(5, 8, 12, 0.82);
+	-webkit-backdrop-filter: blur(4px);
+	backdrop-filter: blur(4px);
+	color: var(--banzaiplay-text);
+	text-align: center;
+	animation: banzaiplay-results-in 0.2s ease-out;
+}
+
+@keyframes banzaiplay-results-in {
+	from {
+		opacity: 0;
+	}
+
+	to {
+		opacity: 1;
+	}
+}
+
+.banzaiplay-results-title {
+	font-size: clamp(20px, 3.6vw, 34px);
+	font-weight: 800;
+	letter-spacing: -0.01em;
+	line-height: 1.15;
+}
+
+.banzaiplay-container .banzaiplay-results-stats {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 8px 36px;
+	margin: 0;
+	padding: 0;
+}
+
+.banzaiplay-results-stats > div {
+	display: flex;
+	flex-direction: column-reverse;
+	align-items: center;
+}
+
+.banzaiplay-container .banzaiplay-results-stats dt {
+	margin: 0;
+	color: var(--banzaiplay-muted);
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.banzaiplay-container .banzaiplay-results-stats dd {
+	margin: 0;
+	color: var(--banzaiplay-text);
+	font-size: clamp(22px, 4vw, 40px);
+	font-variant-numeric: tabular-nums;
+	font-weight: 800;
+	line-height: 1.1;
+}
+
+.banzaiplay-results-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+}
+
+.banzaiplay-container .banzaiplay-results-again {
+	padding: 12px 26px;
+}
+
+.banzaiplay-container .banzaiplay-results-close {
+	width: auto;
+	min-height: 0;
+	margin: 6px 0 0;
+	padding: 11px 22px;
+	border: 1px solid rgba(245, 247, 250, 0.35);
+	border-radius: 999px;
+	background: transparent;
+	box-shadow: none;
+	color: var(--banzaiplay-text);
+	font: inherit;
+	font-size: 15px;
+	font-weight: 600;
+	line-height: 1;
+	text-transform: none;
+	cursor: pointer;
+}
+
+.banzaiplay-container .banzaiplay-results-close:hover {
+	border-color: rgba(245, 247, 250, 0.7);
+	background: rgba(245, 247, 250, 0.08);
+	color: var(--banzaiplay-text);
+}
+
+.banzaiplay-container .banzaiplay-results-close:focus-visible {
+	outline: 3px solid #fff;
+	outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.banzaiplay-results {
+		animation: none;
+	}
+}

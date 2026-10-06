@@ -16,6 +16,8 @@ You exported your game for the web. Now it needs to live on your WordPress site 
 
 BanzaiPlay takes the build you already have, as a zip, works out which engine made it, and gives you a shortcode and a block to put it anywhere.
 
+BanzaiPlay is free and open source. Every feature below is included, with no licence key. It is distributed on GitHub: https://github.com/JoshRobs/BanzaiPlay
+
 **What you get**
 
 * **Upload a zip, get a shortcode.** `[banzai-play game="my-game"]` — or the BanzaiPlay Game block in the block editor.
@@ -30,9 +32,9 @@ BanzaiPlay takes the build you already have, as a zip, works out which engine ma
 * **Painless updates.** Upload a new build and it replaces the old one in one step; browsers pick up the new files, and players keep their saved progress.
 * **Isolated from your theme.** Every game plays in its own frame, so its styles and scripts can't touch your site, and your theme can't break the game.
 
-**BanzaiPlay Pro**
+**Make it yours, and connect it to WordPress**
 
-* **Your loading screen.** Your game's cover art behind the Play and loading screens, your logo above its title, your colour on the Play button and progress bar — set once for every game, or per game — and no "Powered by BanzaiPlay".
+* **Your loading screen.** Your game's cover art behind the Play and loading screens, your logo above its title, your colour on the Play button and progress bar — set once for every game, or per game.
 * **A game portfolio.** `[banzai-play-gallery]` shows your games in a grid with their covers, descriptions and tags, filterable by tag or engine, and plays each one in a lightbox — or links to its page.
 * **Play statistics.** Plays, average time played, completion rate and phone versus desktop, per game and per day, on your own site. Anonymous: no IP addresses, cookies or user IDs, and no outside service.
 * **WordPress to game.** Hand your game values you set in the admin, the post it is on, and the logged-in player — name, roles, and a REST API nonce for saving progress or scores to WordPress.
@@ -41,11 +43,22 @@ BanzaiPlay takes the build you already have, as a zip, works out which engine ma
 
 == Installation ==
 
-1. Install and activate BanzaiPlay.
-2. Go to **BanzaiPlay → Add New**, name your game and upload a zip of your web build.
-3. Copy the shortcode into any page, or add the **BanzaiPlay Game** block.
+1. Download `banzaiplay-{version}.zip` from https://github.com/JoshRobs/BanzaiPlay/releases/latest
+2. Go to **Plugins → Add New Plugin → Upload Plugin**, choose the zip, and activate BanzaiPlay.
+3. Go to **BanzaiPlay → Add New**, name your game and upload a zip of your web build.
+4. Copy the shortcode into any page, or add the **BanzaiPlay Game** block.
+
+To update, download the new release and upload it the same way. WordPress offers to replace the installed version, and your games are kept.
 
 == Frequently Asked Questions ==
+
+= Is it really free? =
+
+Yes. Every feature is included, with no licence key, no account and no limits. It's GPL software, published on GitHub.
+
+= Will WordPress update it automatically? =
+
+No. BanzaiPlay isn't listed on WordPress.org, so WordPress doesn't check it for updates. Watch the GitHub repository's releases, and upload a new zip when you want to update.
 
 = My build is bigger than the upload limit. =
 
@@ -93,7 +106,7 @@ Every game gets `window.BanzaiPlay` inside its frame — from a Unity .jslib, Go
 * `BanzaiPlay.data` — values set on the game's Data Bridge.
 * `await BanzaiPlay.user()` — the logged-in player's details, as enabled for the game.
 
-The API is there in every version, so a game that uses it never breaks; with Pro, events reach a results screen, your statistics, the page (`banzaiplay:event`) and PHP (`do_action( 'bzpl/game_event', $name, $data, $context )`), and the data is filled in. Events come from the visitor's browser, so anyone can send one: don't give anything of value away on an event alone.
+The API is always defined, so a game that uses it never breaks. Events reach a results screen, your statistics, the page (`banzaiplay:event`) and PHP (`do_action( 'bzpl/game_event', $name, $data, $context )`). Events come from the visitor's browser, so anyone can send one: don't give anything of value away on an event alone.
 
 = Does it show the game in the block editor? =
 
@@ -103,14 +116,7 @@ The editor shows a card with the game's name, engine and size, the shape of the 
 
 BanzaiPlay loads nothing from other sites on your pages: your game's files are served from your own `wp-content/uploads` folder, and play statistics are stored in your own database. Any services your game calls are up to your game.
 
-The plugin uses **Freemius** (freemius.com) for licensing, updates and optional usage data. It contacts Freemius only in these cases:
-
-* **If you opt in** when you first activate the plugin. It sends your name and email address, your site's URL, WordPress, PHP and plugin versions, and language, and keeps them in sync over time. Skip the opt-in and none of this is sent.
-* **When you activate a Pro licence.** It sends the licence key and the same site details, so Freemius can check the licence and deliver Pro updates, and it re-checks the licence periodically.
-* **When you open BanzaiPlay → Upgrade,** the pricing and checkout pages load from Freemius.
-* **If you send the optional feedback form** shown when deactivating the plugin, your answer is sent.
-
-Freemius [terms of service](https://freemius.com/terms/) and [privacy policy](https://freemius.com/privacy/).
+The plugin collects no usage data and does not contact any service of its own.
 
 == Changelog ==
 

@@ -2,8 +2,6 @@
 # Upload fixtures through the real admin form, the way a person would.
 #
 #   npx @wordpress/env start
-#   # Freemius' opt-in takes over BanzaiPlay's screens until it is skipped:
-#   npx @wordpress/env run cli wp eval 'banzaiplay_fs()->skip_connection( null, true );'
 #   npx @wordpress/env run cli php wp-content/plugins/BanzaiPlay/tests/make-fixtures.php
 #   bash tests/e2e.sh                       # every zip in tests/output
 #   bash tests/e2e.sh unity-gzip godot      # just these

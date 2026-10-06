@@ -83,37 +83,23 @@ final class Plugin {
 			$this->admin->register();
 		}
 
-		// Stripped from the free build by Freemius, files and all.
-		if ( banzaiplay_fs()->is__premium_only() ) {
-			require_once BZPL_PLUGIN_PATH . 'includes/class-settings__premium_only.php';
-			require_once BZPL_PLUGIN_PATH . 'includes/class-pro-assets__premium_only.php';
-			require_once BZPL_PLUGIN_PATH . 'includes/class-branding__premium_only.php';
-			require_once BZPL_PLUGIN_PATH . 'includes/class-gallery__premium_only.php';
-			require_once BZPL_PLUGIN_PATH . 'includes/class-plays__premium_only.php';
-			require_once BZPL_PLUGIN_PATH . 'includes/class-analytics__premium_only.php';
-			require_once BZPL_PLUGIN_PATH . 'includes/class-data-bridge__premium_only.php';
-			require_once BZPL_PLUGIN_PATH . 'includes/class-game-events__premium_only.php';
-			require_once BZPL_PLUGIN_PATH . 'includes/class-licence-ui__premium_only.php';
+		$settings = new Settings();
+		$plays    = new Plays( $this->games, $settings );
 
-			$settings = new Settings();
-			$plays    = new Plays( $this->games, $settings );
+		$settings->register();
+		( new Player_Extras( $settings, $plays ) )->register();
+		( new Branding( $settings ) )->register();
+		( new Gallery( $this->games, $this->embed, $settings ) )->register();
+		$plays->register();
+		( new Data_Bridge( $this->games ) )->register();
+		( new Game_Events() )->register();
 
-			$settings->register();
-			( new Pro_Assets( $settings, $plays ) )->register();
-			( new Branding( $settings ) )->register();
-			( new Gallery( $this->games, $this->embed, $settings ) )->register();
-			$plays->register();
-			( new Data_Bridge( $this->games ) )->register();
-			( new Game_Events() )->register();
-
-			if ( is_admin() ) {
-				( new Analytics( $this->games, $plays ) )->register();
-				( new Licence_Ui() )->register();
-			}
+		if ( is_admin() ) {
+			( new Analytics( $this->games, $plays ) )->register();
 		}
 
 		/**
-		 * Fires once the plugin is active. Pro modules hook here.
+		 * Fires once the plugin is active. Add-ons hook here.
 		 *
 		 * @param Plugin $plugin The running plugin.
 		 */

@@ -5,8 +5,8 @@ How BanzaiPlay is put together, and the decisions behind it that are not obvious
 ## Layout
 
 ```
-banzaiplay.php                  bootstrap: Freemius (banzaiplay_fs()), constants, autoloader, bzpl_has_valid_license(),
-                                plugins_loaded, bzpl_uninstall() (on Freemius' after_uninstall)
+banzaiplay.php                  bootstrap: constants, autoloader, plugins_loaded, bzpl_uninstall()
+                                (registered as the uninstall hook on activation), deactivation
 includes/
   class-plugin.php              wires everything; fires bzpl/init
   class-game-manager.php        the banzaiplay_games option, where each game's files live, status, dimensions
@@ -20,18 +20,17 @@ includes/
   class-block.php               banzaiplay/game → Embed::render(); editor data
   class-admin.php               menu, list/edit screens, admin-post handlers, notices
   class-filesystem.php          the only code that touches the disk (WP_Filesystem_Direct, plus streaming)
-  class-license.php             Freemius seam; fails closed
-  class-*__premium_only.php     Pro modules (see Pro) — not in the free build
+  class-settings.php, …         feature modules (see Feature modules)
 blocks/game/block.json          block metadata (editor script registered by handle — no build step)
-templates/                      admin screens; *__premium_only.php for Pro cards, screens and the gallery
+templates/                      admin screens and cards, and the gallery
 assets/js/frontend.js           the player on the page: overlay, loading screen, frame, focus, fullscreen
 assets/js/frame.js              the bridge inside every game's frame
 assets/js/engines/              unity.js, godot.js start those engines; phaser.js, playcanvas.js improve progress
 assets/js/admin.js, block.js    admin screens (with upload progress) and the block editor
-assets/*/*__premium_only.*       Pro: the player's extras, the gallery, the Pro admin cards
-vendor/freemius/                 Freemius SDK 2.13.4 (same as BanzaiEmbed)
-tests/                          fixtures, upload script, browser tests (free, Pro, free-build copy)
-tools/build.ps1                 allowlist packager
+assets/js/player-extras.js      the player's extras on the page: data, events, results, statistics, several games
+assets/js/gallery.js            the gallery's lightbox; admin-extras.js: media and colour fields, Data Bridge rows
+tests/                          fixtures, upload script, browser tests
+tools/build.ps1                 allowlist packager for the GitHub release zip
 ```
 
 Naming follows the sibling plugins' real convention (not the spec's `banzaiplay_` everywhere): namespace `BanzaiPlay\`, global functions `bzpl_`, constants `BZPL_`, hooks `bzpl/…`, admin handles and CSS classes `bzpl-`. The slug, text domain, option (`banzaiplay_games`), uploads folder and the front-end CSS classes (`banzaiplay-container` and friends, from the spec — site owners style these) are `banzaiplay`.
@@ -42,7 +41,7 @@ The spec describes Unity booted inline on the WordPress page (a `<canvas>` in th
 
 - **Keyboard capture (#2).** Key events only go to the focused document. While the frame has focus the game gets every key; when the visitor clicks outside, the page gets them. Unity's `captureAllKeyboardInput` only ever affects its own window, so it doesn't need overriding — the inline alternative (stopping key events on the page's window while the game isn't focused) would also stop the page's own key handlers. Escape is caught by the bridge's capture-phase listener on the frame's window, registered before any game script, so the game never sees it.
 - **Isolation.** The game's CSS, globals and engine runtime can't touch the theme, and vice versa. Two engines on one page can't collide.
-- **Unloading.** Removing the frame frees the game completely, WebGL context and memory included — the foundation for the Pro "unload when another game starts" feature.
+- **Unloading.** Removing the frame frees the game completely, WebGL context and memory included — the foundation for the "one game at a time" setting.
 - **Sizing (#3).** The game sees a window exactly the player's size; engines that fill their window (Unity, Godot, Phaser's FIT/RESIZE) just work.
 
 The cost: the canvas is not in the page, so the spec's container markup has an empty `.banzaiplay-stage` where the frame goes instead of `<canvas class="banzaiplay-canvas">`.
@@ -117,32 +116,30 @@ The edit screen has a **Preview** card that renders the real player (inactive ga
 
 The spec's `wp_ajax_banzaiplay_upload_game`/`_delete_game` are admin-post actions instead (`banzaiplay_save_game`, `banzaiplay_delete_game`, `banzaiplay_toggle_game`), as in BanzaiEmbed: they work without JavaScript and give every error a page to land on.
 
-## Pro
+## Feature modules
 
-Freemius is `banzaiplay_fs()` at the top of `banzaiplay.php`, with BanzaiEmbed's `function_exists` guard so the free and premium copies can both be active for a moment. `bzpl_has_valid_license()` → `License::is_valid()` asks `can_use_premium_code()`, fails closed without the SDK, and `BZPL_SIMULATE_PRO` in wp-config.php forces it either way. `License::PRO_AVAILABLE` is true: the free edit screen shows two upgrade cards where the Pro cards go.
+BanzaiPlay is distributed free on GitHub, with no paid tier and no licensing; it was built with a Freemius Pro tier, dropped when WordPress.org turned away BanzaiEmbed for being an embedding plugin. The modules that made up Pro are registered in `Plugin::run()` like everything else, and still attach through hooks the core fires rather than being named by it — `bzpl/player_config`, `bzpl/player_classes`, `bzpl/player_style`, `bzpl/player_logo`, `bzpl/frontend_script_deps`, `bzpl/enqueue_assets`, `bzpl/admin_menu` (with `Admin::add_screen()`/`render_screen()`), `bzpl/admin_enqueue`, `bzpl/edit_cards`, `bzpl/save_game`, `bzpl/header_actions`, `bzpl/game_deleted`. Keep new features to that shape. Each edit-screen card posts a hidden marker field (`bzpl_look`, `bzpl_gallery`, …) and its save handler only touches the record when the marker was posted, so the Add New form leaves those settings alone.
 
-Pro modules are `*__premium_only.php` files loaded from one `is__premium_only()` block in `Plugin::run()`; Freemius leaves both out of the free build (`tests/make-free.ps1` approximates that build for testing). Free code never names a Pro class: Pro attaches through hooks the free code fires — `bzpl/player_config`, `bzpl/player_classes`, `bzpl/player_style`, `bzpl/player_logo`, `bzpl/frontend_script_deps`, `bzpl/enqueue_assets`, `bzpl/admin_menu` (with `Admin::add_screen()`/`render_screen()`), `bzpl/admin_enqueue`, `bzpl/edit_cards`, `bzpl/save_game`, `bzpl/header_actions`, `bzpl/game_deleted`. As in BanzaiEmbed, what Pro has set **keeps working when a licence lapses** (a game built to read its data must not break overnight); changing it needs a licence — the cards are a disabled fieldset with a notice, and their save handlers ignore the post. "Powered by BanzaiPlay" is the exception: it returns, because it is gated on the licence, not on the code.
+Uninstall cleanup (games, builds, settings, the plays table, the cron event) is `bzpl_uninstall()`, registered with `register_uninstall_hook()` on activation.
 
-Uninstall cleanup (games, builds, settings, the plays table, the cron event) runs on Freemius' `after_uninstall`, not `register_uninstall_hook()`: WordPress keeps one uninstall callback per plugin and Freemius needs it. Freemius skips `after_uninstall` when the other copy (free or premium) is still active, so deleting the leftover free copy after upgrading doesn't delete anyone's games.
-
-The page side is one script, `pro__premium_only.js`, registered as a **dependency of `frontend.js`** so it runs first: a game that starts with the page starts while `frontend.js` runs, and Pro's listeners must already be there. It listens on `document` for the player's DOM events (`banzaiplay:start` — cancelable —, `frame`, `ready`, `error`, `exit`, `unload`), which are free and public, and uses the Player's `start()`, `stop()`, `unload()`.
+The page side is one script, `player-extras.js`, registered as a **dependency of `frontend.js`** so it runs first: a game that starts with the page starts while `frontend.js` runs, and its listeners must already be there. It listens on `document` for the player's DOM events (`banzaiplay:start` — cancelable —, `frame`, `ready`, `error`, `exit`, `unload`), which are free and public, and uses the Player's `start()`, `stop()`, `unload()`.
 
 | Module | What it does |
 |---|---|
 | `Settings` | BanzaiPlay → Settings, option `banzaiplay_settings`: default logo and colour; play one game at a time; close games scrolled out of view; record plays, and for how long. |
 | `Branding` | Spec #11. Per game (`look`: cover, backdrop, logo, colour), falling back to Settings: `has-backdrop`/`has-logo` classes, `--banzaiplay-accent`, readable `--banzaiplay-on-accent` (black or white, whichever contrasts more — the switch is at luminance ≈ 0.18) and `--banzaiplay-glow`, the logo above the title. Images are media-library attachments. |
-| `Gallery` | Spec #12: `[banzai-play-gallery]` with `tags`, `games`, `engine`, `filter`, `open`, `columns`, `orderby`, `limit`. Per game `gallery`: tags, page URL; the picture is the cover. Each card's player is printed in a `<template>`; `gallery__premium_only.js` clones it into the gallery's `<dialog>` and starts it on the click that opened it (so it has sound and the keyboard), and removes it on close. Esc first releases the keyboard (the frame has it), then closes. The card title is the one control per game; the picture repeats it for the mouse only. |
+| `Gallery` | Spec #12: `[banzai-play-gallery]` with `tags`, `games`, `engine`, `filter`, `open`, `columns`, `orderby`, `limit`. Per game `gallery`: tags, page URL; the picture is the cover. Each card's player is printed in a `<template>`; `gallery.js` clones it into the gallery's `<dialog>` and starts it on the click that opened it (so it has sound and the keyboard), and removes it on close. Esc first releases the keyboard (the frame has it), then closes. The card title is the one control per game; the picture repeats it for the mouse only. |
 | `Plays` | Spec #13's storage and #15's server side. Table `{prefix}banzaiplay_plays` (dbDelta, `banzaiplay_db_version`), one row per play: random `sid`, game, post, UTC start, seconds, device class, completed, score, event count — no IP, user ID or cookie. Endpoint `admin-ajax.php?action=bzpl_play` (`op` = `start` / `ping` / `event`). Starts return a token (HMAC of sid and game), which later calls must send: another site can't post events in a logged-in visitor's name, but events are still the browser's claim — documented as such. Starts are rate-limited per visitor (120 / 10 min, by hashed address in a transient), events capped at 300 per play, time capped at what has passed since the start. Every event fires `bzpl/game_event` (and `bzpl/game_event/{name}`) with the logged-in user; `complete` and `score` update the row. Old rows are pruned daily on cron. Not a REST route, for the reasons in BanzaiEmbed's Data Bridge. |
-| `Analytics` | BanzaiPlay → Analytics: plays, average time, completion rate (over games that ever sent `complete`), device split, a server-rendered SVG chart of plays per day (site time zone), and a table per game. Needs no licence to view. |
+| `Analytics` | BanzaiPlay → Analytics: plays, average time, completion rate (over games that ever sent `complete`), device split, a server-rendered SVG chart of plays per day (site time zone), and a table per game. |
 | `Data_Bridge` | Spec #14, BanzaiEmbed's design: values (text, post, site) go in the player's config, cacheable; the visitor's fields (ID, name, email, roles, REST nonce) are fetched from `admin-ajax.php?action=bzpl_user`, never cached. The page hands them to the frame **on the iframe element** (`frame.banzaiPlay`) before setting its `src`, and the bridge reads `frameElement.banzaiPlay` synchronously, before the game's first script — so `BanzaiPlay.data` is there from the start. |
 | `Game_Events` | Spec #15's per-game part: the results screen switch (`events.results`) and the card documenting `emit()`, the DOM event and the PHP hooks. |
-| `Pro_Assets`, `Licence_Ui` | Script and style registration; the licence button and menu item (BanzaiEmbed's, reusing Freemius' own activation dialog). |
+| `Player_Extras` | Registers `player-extras.js`/`.css` (with their `window.banzaiPlayExtras` config) and `admin-extras.js` (media library, colour picker). |
 
-**The game's API** is `window.BanzaiPlay` inside the frame, defined by the free bridge so a game built for it never throws on a free site: `game`, `data` (`{}` without Pro), `user()` (`null` without Pro or without user fields), `emit(name, data)` (also `emit(slug, name, data)`, the spec's form). Names are 1–64 of `A-Za-z0-9_.:-`; data is copied through JSON. `emit()` posts an `emit` message to the page, where Pro fires `banzaiplay:event` on the player, reports it through the play's session, and — with the results screen on — shows score and time over the game for `complete`. A session's requests are **sent one after another**: a `score` just before `complete` once landed after it and overwrote the score. `score` events are coalesced to one every two seconds. `window.BanzaiPlay.games[slug]` and `window.BanzaiPlay.emit(slug, name, data)` on the page are the spec's parent-side forms.
+**The game's API** is `window.BanzaiPlay` inside the frame, defined by the bridge itself so a game built for it never throws, even where nothing is configured: `game`, `data` (`{}` with no Data Bridge values), `user()` (`null` without user fields), `emit(name, data)` (also `emit(slug, name, data)`, the spec's form). Names are 1–64 of `A-Za-z0-9_.:-`; data is copied through JSON. `emit()` posts an `emit` message to the page, where `player-extras.js` fires `banzaiplay:event` on the player, reports it through the play's session, and — with the results screen on — shows score and time over the game for `complete`. A session's requests are **sent one after another**: a `score` just before `complete` once landed after it and overwrote the score. `score` events are coalesced to one every two seconds. `window.BanzaiPlay.games[slug]` and `window.BanzaiPlay.emit(slug, name, data)` on the page are the spec's parent-side forms.
 
 **Time played** counts only while the game runs and the page is visible; it is reported every 30 s, when the tab is hidden (often the last chance on mobile), and on unload or `pagehide` by `sendBeacon`. The edit screen's preview is never counted (`track` is left out of its config).
 
-**Several games on a page** (spec #16; nothing downloads before Play in any version): games that start with the page load one after another in page order — `banzaiplay:start` is cancelled for an autoplay while another game is loading, the queued player shows "Waiting for the other game to load…", and the next starts when one becomes ready, fails or goes. With *one at a time*, starting a game `stop()`s the others, and only the first autoplay game starts. With *close out of view*, an `IntersectionObserver` stops a game ten seconds after it leaves the viewport (never in fullscreen).
+**Several games on a page** (spec #16; nothing downloads before Play): games that start with the page load one after another in page order — `banzaiplay:start` is cancelled for an autoplay while another game is loading, the queued player shows "Waiting for the other game to load…", and the next starts when one becomes ready, fails or goes. With *one at a time*, starting a game `stop()`s the others, and only the first autoplay game starts. With *close out of view*, an `IntersectionObserver` stops a game ten seconds after it leaves the viewport (never in fullscreen).
 ## Testing
 
 `tests/make-fixtures.php` (in the wp-env CLI container) builds synthetic fixtures — a plain HTML5 game, a root-based Vite-style build, Unity plain and gzip, Godot 4.3, global-script Phaser, a hostile zip — with the real file layouts and loader APIs, each recording what it saw in `window.fixture`. `tests/e2e.sh` uploads zips through the real form. `tests/browser.mjs` plays every game on a page in headless Chrome/Edge via the DevTools protocol (real clicks and key presses) and checks the player's state, that keys reach the game and not the page, and that Esc gives them back. The fakes test BanzaiPlay's side, not Unity or Godot, so `tests/fetch-real.sh` downloads real third-party exports into `tests/real/` (gitignored — several have no licence; never commit or ship them):
@@ -155,6 +152,6 @@ The page side is one script, `pro__premium_only.js`, registered as a **dependenc
 | `godot3-dodge` — [godot-demo/godot-2d](https://huggingface.co/spaces/godot-demo/godot-2d) | Godot 3.x config API (`gdnativeLibs`) | Runs in ~9 s; keys reach the game |
 | `godot3-dodge-threads` — [godot-demo/godot-2d-threads](https://huggingface.co/spaces/godot-demo/godot-2d-threads) | Threaded export (`index.worker.js`) | Fails cleanly with the threads message |
 
-The Pro features are covered by `tests/pro.mjs`, which runs `tests/pro-setup.php` itself — it skips the Freemius opt-in, adds two images, a must-use plugin that logs `bzpl/game_event`, and the test pages. It covers the Settings and edit-screen cards saved through their forms, the branded player, the Data Bridge from inside the frame, events reaching the page, the results screen, the PHP hook and the plays table, Play again, one at a time, load one at a time (event order), the gallery's filters and lightbox, Analytics, and a lapsed licence. The free build is checked by building it with `tests/make-free.ps1`, activating it in place of BanzaiPlay with `BZPL_SIMULATE_PRO` false, and running `tests/free.mjs`, `browser.mjs` and `start.mjs` — all pass (2026-10-04), as do `browser.mjs`, `start.mjs` and `screens.mjs` with Pro on.
+The feature modules are covered by `tests/features.mjs`, which runs `tests/features-setup.php` itself — it adds two images, a must-use plugin that logs `bzpl/game_event`, and the test pages. It covers the Settings and edit-screen cards saved through their forms, the branded player, the Data Bridge from inside the frame, events reaching the page, the results screen, the PHP hook and the plays table, Play again, one at a time, load one at a time (event order), the gallery's filters and lightbox, and Analytics. (Last run 2026-10-04, as `pro.mjs`, before licensing was removed.)
 
 Not covered by a real build yet: Unity Brotli (only the HTTPS error path is testable on the http:// test site), Unity 2019 `UnityLoader.js`, Construct 3, PlayCanvas, a global-script Phaser game, and real mobile devices.

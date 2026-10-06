@@ -6,6 +6,10 @@ A WordPress plugin that lets developers embed HTML5/WebGL games from any engine 
 
 Supports Unity WebGL, Phaser, Godot HTML5, Construct 3, PlayCanvas, PixiJS, and any other engine that exports to HTML5/WebGL. The plugin detects the engine from the build files and applies the right configuration automatically.
 
+## Distribution
+
+Free and open source, released on GitHub (https://github.com/JoshRobs/BanzaiPlay) as a zip attached to each release. WordPress.org rejected BanzaiEmbed because it doesn't accept embedding plugins, and BanzaiPlay is the same kind, so the planned Freemius Pro tier was dropped: every feature ships to everyone, with no licensing, no upsells, no "Powered by" branding and no Freemius SDK. Don't reintroduce feature gating or "Pro" labels.
+
 ## Why This Exists
 
 There is no maintained, polished WordPress plugin for embedding games. The existing options are:
@@ -56,7 +60,7 @@ Modern browsers block autoplay audio. A game that starts with sound will produce
 ### 6. Mobile Considerations
 Touch input, virtual viewport issues, orientation lock preferences, and performance warnings for games that are too heavy for mobile. The plugin can optionally show a "Best experienced on desktop" message for resource-intensive games.
 
-## MVP Scope — Free Version
+## MVP Scope — Core
 
 ### 1. Game Management Admin Page
 
@@ -187,7 +191,7 @@ When the shortcode or block renders, it outputs a game container with:
   - Unity: `createUnityInstance` progress callback (0-1)
   - Godot: engine loading progress events
   - Phaser/Generic: approximate based on script load events
-- BanzaiPlay branding subtly shown (small "Powered by BanzaiPlay" text, removable in pro)
+- ~~BanzaiPlay branding subtly shown (small "Powered by BanzaiPlay" text, removable in pro)~~ — dropped with the paid tier; no attribution is shown
 
 ### 8. Shortcode
 
@@ -214,16 +218,18 @@ When the shortcode or block renders, it outputs a game container with:
 - Re-runs engine detection
 - Cache-busting version parameter on all enqueued assets
 
-## MVP Scope — Pro Features
+## MVP Scope — Advanced Features
 
-### 11. Custom Loading Screens (Pro)
+Originally planned as a paid Pro tier behind Freemius. All of these are now free — see **Distribution** above.
+
+### 11. Custom Loading Screens
 
 - Upload a custom background image for the loading screen
 - Custom loading bar color
 - Custom logo/branding to replace the default
 - Remove "Powered by BanzaiPlay" text
 
-### 12. Game Portfolio Shortcode (Pro)
+### 12. Game Portfolio Shortcode
 
 `[banzai-play-gallery]`
 
@@ -235,7 +241,7 @@ Renders a responsive grid/gallery of all uploaded games with:
 
 This is the feature that portfolio sites need — a single shortcode that shows all their games in a polished grid.
 
-### 13. Analytics Dashboard (Pro)
+### 13. Analytics Dashboard
 
 Track per-game:
 - Total plays (Click to Play events)
@@ -245,7 +251,7 @@ Track per-game:
 
 Lightweight — stores data in a custom WordPress table, no external analytics service needed.
 
-### 14. Data Bridge — WordPress to Game (Pro)
+### 14. Data Bridge — WordPress to Game
 
 Pass WordPress data into the game:
 - Current user info (ID, name, role)
@@ -255,7 +261,7 @@ Pass WordPress data into the game:
 
 Enables: leaderboards that save to WordPress, personalized game experiences, authenticated game saves, LMS integration where game completion triggers WordPress actions.
 
-### 15. Game-to-WordPress Communication (Pro)
+### 15. Game-to-WordPress Communication
 
 A lightweight JS API the game can call to communicate back:
 ```javascript
@@ -269,7 +275,7 @@ The plugin listens for these events and can:
 - Trigger WordPress hooks (so other plugins can react to game events)
 - Display a score/completion overlay after the game ends
 
-### 16. Multiple Instances and Lazy Loading (Pro)
+### 16. Multiple Instances and Lazy Loading
 
 - Support multiple games on one page with lazy loading — game builds don't download until "Click to Play" is pressed
 - Priority loading — if multiple games are on one page, only load one at a time to avoid memory issues
@@ -383,18 +389,18 @@ Only load the engine-specific JS file for the engine that game uses. Don't load 
 13. Gutenberg block
 14. Game update/replace flow
 15. Construct 3 and PlayCanvas support
-16. Pro feature gating (Freemius, same as BanzaiStyle)
-17. Custom loading screens (Pro)
-18. Game portfolio gallery (Pro)
-19. Analytics (Pro)
-20. Data bridge and game-to-WP communication (Pro)
+16. ~~Pro feature gating (Freemius, same as BanzaiStyle)~~ — removed; everything is free
+17. Custom loading screens
+18. Game portfolio gallery
+19. Analytics
+20. Data bridge and game-to-WP communication
 
 ## Implementation Decisions (read before changing code)
 
-All twenty priorities are built: the free scope (1–15) and Pro (16–20, spec sections 11–16). Where the code departs from the spec above, it does so deliberately — [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) has the reasoning. In short:
+All the priorities are built: the core (1–15) and the advanced features (17–20, spec sections 11–16); 16, licensing, was removed. Where the code departs from the spec above, it does so deliberately — [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) has the reasoning. In short:
 
 - **Naming** follows the sibling plugins' real convention, not `banzaiplay_` everywhere: namespace `BanzaiPlay\`, functions `bzpl_`, constants `BZPL_`, hooks `bzpl/…`, admin classes `bzpl-`. Class files are `includes/class-{name}.php` via the autoloader. The option (`banzaiplay_games`), uploads folder, text domain and the front-end CSS classes (`banzaiplay-container` etc., which site owners style) keep `banzaiplay`.
-- **Every game plays in a same-origin iframe**, Unity included — not inline on the page. The frame does keyboard isolation by itself: keys only reach the focused document, so Unity's `captureAllKeyboardInput` needs no overriding. It also isolates CSS and globals and frees everything on unload. The container's `<canvas>` from the spec is an empty `.banzaiplay-stage` that receives the frame on Play. Nothing downloads before Play, in the free version too.
+- **Every game plays in a same-origin iframe**, Unity included — not inline on the page. The frame does keyboard isolation by itself: keys only reach the focused document, so Unity's `captureAllKeyboardInput` needs no overriding. It also isolates CSS and globals and frees everything on unload. The container's `<canvas>` from the spec is an empty `.banzaiplay-stage` that receives the frame on Play. Nothing downloads before Play.
 - **`Frame` serves the frame document** at `/?banzaiplay_frame=slug&v=build.version` on `do_parse_request`. Mode `unity`/`godot`: a document BanzaiPlay writes, with `engines/unity.js` (createUnityInstance / legacy UnityLoader) or `engines/godot.js` (init + preloadFile + start, so the pack is cache-busted) providing real progress. Mode `html` (every other engine): the build's own page with `<base href>` and the bridge (`assets/js/frame.js`) injected first in `<head>`, plus `engines/phaser.js` / `playcanvas.js` hooks for real progress. Godot ≤ 3.2 plays as `html`.
 - **The bridge** posts `hello/progress/ready/error/exit/focus/blur/release` to the parent (same origin; `frontend.js` matches by `event.source`). It catches the release key (Esc, Shift+Esc or none, per game) in the capture phase before any game script, resumes suspended AudioContexts and media, and falls back when `.wasm` has the wrong MIME type. Tab is never taken from the game: Esc is the documented way out.
 - **No `sandbox` attribute**: games need `allow-same-origin` + `allow-scripts` (storage, module scripts, fetches), and with both a sandbox is no boundary. The boundary is `manage_options` + `unfiltered_html`.
@@ -404,6 +410,6 @@ All twenty priorities are built: the free scope (1–15) and Pro (16–20, spec 
 - **Forms post to admin-post.php**, not the spec's `wp_ajax_` actions. admin.js sends uploads by XHR for a progress bar with `ajax=1`, and `Admin::redirect()` answers that with JSON so queued notices survive. Uploads stream entries to disk (no whole-file memory).
 - **Start is a per-game setting** (`start`: `click`, the default, or `load`), not only the spec's shortcode `autoplay`. The shortcode's `autoplay` now defaults to empty = "use the game's setting", and `true`/`false` override it on that page. The block's boolean `autoplay` became a `start` attribute (`""` = the game's setting, `click`, `load`) — changed before the first release, so no saved blocks used it. The edit screen's preview always waits for Play, and a game marked "best on desktop" never starts by itself on a touch device. Autoplay never moves focus into the game.
 - **Width/height** are both-or-neither on the game; shortcode/block may give one and the other follows the ratio. Fit `scale` (fixed-size canvases) renders the frame at native size and transforms it.
-- **Freemius** is `banzaiplay_fs()` (the name its generator gave; not `bzpl_fs()`), SDK in `vendor/freemius/` (2.13.4, as BanzaiEmbed). `bzpl_has_valid_license()` asks `can_use_premium_code()` and fails closed; `BZPL_SIMULATE_PRO` in wp-config.php forces it either way. Uninstall cleanup is on Freemius' `after_uninstall` (Freemius skips it while the other copy is active). Until someone opts in or skips, Freemius' opt-in replaces BanzaiPlay's screens — on the test site, `wp eval 'banzaiplay_fs()->skip_connection( null, true );'` (tests/pro-setup.php does it).
-- **Pro** lives in `*__premium_only.php` files (and `assets/*/*__premium_only.*`) loaded from one `is__premium_only()` block in `Plugin::run()` — never reference a Pro class from free code; Pro attaches through hooks the free code fires (`bzpl/player_config`, `bzpl/edit_cards`, `bzpl/save_game`, `bzpl/admin_menu`… — ARCHITECTURE.md → Pro lists them). What Pro set keeps working when a licence lapses; changing it needs one (cards render as a disabled fieldset). Deliberate choices beyond the spec: a site-wide **Settings** screen (default logo/colour, the several-games behaviour, statistics on/off and retention); the loading screen's **cover image** doubles as the gallery picture; the **game API** (`window.BanzaiPlay` with `data`, `user()`, `emit()`) lives *inside the frame* and is defined by the free bridge too, so games never throw on free sites — the spec's `window.parent.BanzaiPlay.emit(slug, …)` and `BanzaiPlay.games[slug]` also work; per-visitor data is fetched (`admin-ajax.php?action=bzpl_user`), never put in the cacheable page; play statistics are anonymous (no IP/user/cookie), sent to `admin-ajax.php?action=bzpl_play` with a per-play token, and every game event fires `bzpl/game_event` in PHP. Spec #16's lazy loading was already free; Pro adds loading autoplay games one at a time (always), and optional "one game at a time" and "close games scrolled out of view".
-- **Testing**: `npx @wordpress/env start` (port 8892) → `tests/make-fixtures.php` (in the cli container) → `bash tests/e2e.sh` → `node tests/browser.mjs` (plays every game on `/banzaiplay-tests/`), `tests/screens.mjs`, `tests/upload.mjs`. The Unity/Godot fixtures are stand-ins with the real APIs; `bash tests/fetch-real.sh` downloads real third-party exports (Unity plain + gzip, Godot 4, Godot 3, Godot 3 threaded) into gitignored `tests/real/` — never commit them. Upload with `bash tests/e2e.sh tests/real/*.zip`, put them on a page, and run `node tests/browser.mjs <page-url>`. Results are in ARCHITECTURE.md → Testing. Pro: `wp config set BZPL_SIMULATE_PRO true --raw`, then `node tests/pro.mjs` (it runs tests/pro-setup.php through `docker exec`). Free build: `pwsh tests/make-free.ps1`, swap it in for BanzaiPlay as its header explains (**remove the copy by deleting its folder, never `wp plugin delete`** — that runs uninstall, which deletes every game), set `BZPL_SIMULATE_PRO` false, run `node tests/free.mjs`, `browser.mjs`, `start.mjs`.
+- **Uninstall cleanup** is `bzpl_uninstall()`, registered with `register_uninstall_hook()` on activation.
+- **Feature modules** (`Settings`, `Player_Extras`, `Branding`, `Gallery`, `Plays`, `Analytics`, `Data_Bridge`, `Game_Events`) are registered in `Plugin::run()` and attach through hooks the core fires (`bzpl/player_config`, `bzpl/edit_cards`, `bzpl/save_game`, `bzpl/admin_menu`… — ARCHITECTURE.md → Feature modules lists them). Deliberate choices beyond the spec: a site-wide **Settings** screen (default logo/colour, the several-games behaviour, statistics on/off and retention); the loading screen's **cover image** doubles as the gallery picture; the **game API** (`window.BanzaiPlay` with `data`, `user()`, `emit()`) lives *inside the frame* and is always defined by the bridge, so games never throw — the spec's `window.parent.BanzaiPlay.emit(slug, …)` and `BanzaiPlay.games[slug]` also work; per-visitor data is fetched (`admin-ajax.php?action=bzpl_user`), never put in the cacheable page; play statistics are anonymous (no IP/user/cookie), sent to `admin-ajax.php?action=bzpl_play` with a per-play token, and every game event fires `bzpl/game_event` in PHP. Spec #16: lazy loading is built into the player; `player-extras.js` adds loading autoplay games one at a time (always), and optional "one game at a time" and "close games scrolled out of view".
+- **Testing**: `npx @wordpress/env start` (port 8892) → `tests/make-fixtures.php` (in the cli container) → `bash tests/e2e.sh` → `node tests/browser.mjs` (plays every game on `/banzaiplay-tests/`), `tests/screens.mjs`, `tests/upload.mjs`. The Unity/Godot fixtures are stand-ins with the real APIs; `bash tests/fetch-real.sh` downloads real third-party exports (Unity plain + gzip, Godot 4, Godot 3, Godot 3 threaded) into gitignored `tests/real/` — never commit them. Upload with `bash tests/e2e.sh tests/real/*.zip`, put them on a page, and run `node tests/browser.mjs <page-url>`. Results are in ARCHITECTURE.md → Testing. Feature modules: `node tests/features.mjs` (it runs tests/features-setup.php through `docker exec`). Never `wp plugin delete` on a test site you want to keep — that runs uninstall, which deletes every game.

@@ -1,5 +1,0 @@
-{
-  "config": {
-    "WP_FS__banzaiplay_SECRET_KEY": "sk_replace-with-your-own-from-the-freemius-dashboard"
-  }
-}

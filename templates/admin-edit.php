@@ -12,7 +12,6 @@
 
 use BanzaiPlay\Admin;
 use BanzaiPlay\Game_Manager;
-use BanzaiPlay\License;
 use BanzaiPlay\Path_Rewriter;
 
 defined( 'ABSPATH' ) || exit;
@@ -380,37 +379,17 @@ php_value post_max_size 256M</pre>
 				</div>
 			</section>
 
-			<?php if ( ! $is_new && has_action( 'bzpl/edit_cards' ) ) : ?>
+			<?php if ( ! $is_new ) : ?>
 				<?php
 				/**
-				 * Print cards below Display & input. Pro modules add theirs here
-				 * and read them in `bzpl/save_game`.
+				 * Print cards below Display & input: Loading screen, Gallery,
+				 * Data Bridge and Game events. Each reads its own fields in
+				 * `bzpl/save_game`.
 				 *
 				 * @param array $record The game being edited.
 				 */
 				do_action( 'bzpl/edit_cards', $record );
 				?>
-			<?php elseif ( ! $is_new && License::is_pro_available() ) : ?>
-				<section class="bzpl-card bzpl-card-pro bzpl-upsell">
-					<header class="bzpl-card-header">
-						<h2><span class="bzpl-card-icon dashicons dashicons-art" aria-hidden="true"></span><?php esc_html_e( 'Loading screen & gallery', 'banzaiplay' ); ?></h2>
-						<span class="bzpl-pro-badge"><span class="dashicons dashicons-star-filled" aria-hidden="true"></span><?php esc_html_e( 'Pro', 'banzaiplay' ); ?></span>
-					</header>
-					<div class="bzpl-card-body">
-						<p><?php esc_html_e( 'Give the Play and loading screens your game\'s cover art, your logo and your colours, without "Powered by BanzaiPlay" — and show every game in a filterable gallery that plays them in a lightbox.', 'banzaiplay' ); ?></p>
-						<a class="button" href="<?php echo esc_url( banzaiplay_fs()->get_upgrade_url() ); ?>"><?php esc_html_e( 'Upgrade to Pro', 'banzaiplay' ); ?></a>
-					</div>
-				</section>
-				<section class="bzpl-card bzpl-card-pro bzpl-upsell">
-					<header class="bzpl-card-header">
-						<h2><span class="bzpl-card-icon dashicons dashicons-randomize" aria-hidden="true"></span><?php esc_html_e( 'Game ↔ WordPress', 'banzaiplay' ); ?></h2>
-						<span class="bzpl-pro-badge"><span class="dashicons dashicons-star-filled" aria-hidden="true"></span><?php esc_html_e( 'Pro', 'banzaiplay' ); ?></span>
-					</header>
-					<div class="bzpl-card-body">
-						<p><?php esc_html_e( 'Hand your game the logged-in player, a REST API nonce and values you set here, and let it report scores and completions back — to a results screen, to other plugins through WordPress hooks, and to play statistics for every game.', 'banzaiplay' ); ?></p>
-						<a class="button" href="<?php echo esc_url( banzaiplay_fs()->get_upgrade_url() ); ?>"><?php esc_html_e( 'Upgrade to Pro', 'banzaiplay' ); ?></a>
-					</div>
-				</section>
 			<?php endif; ?>
 		</div>
 

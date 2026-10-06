@@ -1278,71 +1278,9 @@
 }
 
 
-/* ---------- Pro cards ---------- */
+/* ---------- Feature cards ---------- */
 
-/* A brand strip along the top, a tinted header and a gradient icon set
-   pro features apart from the free cards around them. */
-.bzpl-card-pro {
-	position: relative;
-	border-color: #f3d9a4;
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 14px -6px rgba(230, 130, 0, 0.25);
-}
-
-.bzpl-card-pro::before {
-	content: "";
-	position: absolute;
-	top: -1px;
-	right: -1px;
-	left: -1px;
-	height: 3px;
-	border-radius: var(--bzpl-radius) var(--bzpl-radius) 0 0;
-	background: var(--bzpl-brand-h);
-}
-
-.bzpl-card-pro .bzpl-card-header {
-	border-bottom-color: #f8ead0;
-	border-radius: var(--bzpl-radius) var(--bzpl-radius) 0 0;
-	background: linear-gradient(90deg, rgba(255, 190, 0, 0.07), rgba(255, 112, 0, 0.07));
-}
-
-.bzpl-card-pro .bzpl-card-header .bzpl-card-icon {
-	background: var(--bzpl-brand);
-	color: #2a1400;
-	box-shadow: 0 1px 3px rgba(60, 28, 0, 0.15);
-}
-
-.bzpl-pro-badge {
-	display: inline-flex;
-	align-items: center;
-	gap: 3px;
-	padding: 3px 10px 3px 7px;
-	border-radius: 999px;
-	background: var(--bzpl-brand-h);
-	box-shadow: 0 1px 3px rgba(60, 28, 0, 0.18);
-	color: #2a1400;
-	font-size: 11px;
-	font-weight: 700;
-	line-height: 1.3;
-	letter-spacing: 0.04em;
-	text-transform: uppercase;
-}
-
-.bzpl-pro-badge .dashicons {
-	width: 12px;
-	height: 12px;
-	font-size: 12px;
-}
-
-.bzpl-upsell .bzpl-card-body p {
-	margin: 0 0 14px;
-	color: var(--bzpl-text);
-}
-
-.bzpl-card-pro .bzpl-card-body > .notice.inline {
-	margin: 0 0 16px;
-}
-
-/* A fieldset that only groups (and disables) a pro card's inputs. */
+/* A fieldset that only groups a card's inputs. */
 .bzpl-fieldset {
 	min-width: 0;
 	margin: 0;
@@ -1393,18 +1331,7 @@
 	font-weight: 400;
 }
 
-.bzpl-pro-note {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	margin: 18px 0 0;
-}
-
-.bzpl-pro-note .dashicons {
-	color: #00a32a;
-}
-
-/* ---------- Image and colour fields (Pro) ---------- */
+/* ---------- Image and colour fields ---------- */
 
 .bzpl-media {
 	display: flex;
@@ -1503,56 +1430,7 @@
 	margin-top: 10px;
 }
 
-/* ---------- Licence status in the brand bar (Pro) ---------- */
-
-.bzpl-licence {
-	display: inline-flex;
-	align-items: center;
-	gap: 5px;
-}
-
-.bzpl-licence .dashicons {
-	width: 16px;
-	height: 16px;
-	font-size: 16px;
-}
-
-.bzpl-licence.is-active {
-	padding: 3px 12px 3px 9px;
-	border-radius: 999px;
-	background: var(--bzpl-brand-h);
-	box-shadow: 0 1px 3px rgba(60, 28, 0, 0.18);
-	color: #2a1400;
-	font-size: 12px;
-	font-weight: 600;
-	text-decoration: none;
-}
-
-.bzpl-licence.is-active .dashicons {
-	width: 13px;
-	height: 13px;
-	font-size: 13px;
-}
-
-a.bzpl-licence.is-active:hover,
-a.bzpl-licence.is-active:focus {
-	color: #2a1400;
-	filter: brightness(0.97);
-}
-
-.wp-core-ui .button.bzpl-licence {
-	border-color: var(--bzpl-accent);
-	color: var(--bzpl-accent);
-}
-
-/* Core button styles nudge icons up; centre this one on the text. */
-.wp-core-ui .button.bzpl-licence .dashicons {
-	margin: 0;
-	line-height: 1;
-	vertical-align: middle;
-}
-
-/* ---------- Settings (Pro) ---------- */
+/* ---------- Settings ---------- */
 
 .bzpl-settings-grid {
 	display: grid;
@@ -1578,7 +1456,7 @@ a.bzpl-licence.is-active:focus {
 	color: #8a2424;
 }
 
-/* ---------- Analytics (Pro) ---------- */
+/* ---------- Analytics ---------- */
 
 .bzpl-analytics-filters select {
 	min-width: 200px;
